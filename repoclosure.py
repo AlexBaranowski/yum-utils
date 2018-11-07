@@ -81,6 +81,8 @@ def parseArgs():
                       help="check closure for this package only")
     parser.add_option("-g", "--group", action="append",
                       help="check closure for packages in this group only")
+    parser.add_option("--plugins", action="store_true", default=False,
+                      help="enable yum plugin support")
     (opts, args) = parser.parse_args()
     return (opts, args)
 
@@ -88,7 +90,7 @@ def parseArgs():
 # so we have to do at least some API guarantee stuff.
 class RepoClosure(yum.YumBase):
     def __init__(self, arch=[], config="/etc/yum.conf", builddeps=False, pkgonly=None,
-                 basearch=None, grouponly=None):
+                 basearch=None, grouponly=None, plugins=False):
         yum.YumBase.__init__(self)
         if basearch:
             self.preconf.arch = basearch
@@ -97,7 +99,7 @@ class RepoClosure(yum.YumBase):
         self.builddeps = builddeps
         self.pkgonly = pkgonly
         self.grouponly = grouponly
-        self.doConfigSetup(fn = config,init_plugins=False)
+        self.doConfigSetup(fn = config,init_plugins=plugins)
         self._rc_arches = arch
 
         if hasattr(self.repos, 'sqlite'):
@@ -226,7 +228,9 @@ def main():
                      builddeps=opts.builddeps,
                      pkgonly=opts.pkg,
                      grouponly=opts.group,
-                     basearch=opts.basearch)
+                     basearch=opts.basearch,
+                     plugins=opts.plugins
+                     )
 
     if opts.repofrompath:
         # setup the fake repos
